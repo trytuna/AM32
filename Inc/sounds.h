@@ -8,7 +8,7 @@
 #ifndef SOUNDS_H_
 #define SOUNDS_H_
 
-#include "main.h"
+#include <main.h>
 
 void playStartupTune(void);
 void playInputTune(void);
