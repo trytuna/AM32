@@ -22,6 +22,7 @@ include f031makefile.mk
 include f421makefile.mk
 include e230makefile.mk
 include f415makefile.mk
+include l431makefile.mk
 
 # Default MCU type to F051
 MCU_TYPE ?= F051
@@ -43,8 +44,12 @@ ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 # Search source files
 SRC_COMMON := $(foreach dir,$(SRC_DIRS_COMMON),$(wildcard $(dir)/*.[cs]))
 
-VERSION_MAJOR := $(shell grep "#define VERSION_MAJOR" $(MAIN_SRC_DIR)/main.c | awk '{print $$3}' )
-VERSION_MINOR := $(shell grep "#define VERSION_MINOR" $(MAIN_SRC_DIR)/main.c | awk '{print $$3}' )
+# VERSION_MAJOR := $(shell grep "#define VERSION_MAJOR" $(MAIN_SRC_DIR)/main.c | awk '{print $$3}' )
+# VERSION_MINOR := $(shell grep "#define VERSION_MINOR" $(MAIN_SRC_DIR)/main.c | awk '{print $$3}' )
+
+#temporary fix to avoid build error "unterminated call to function `shell': missing `)'.  Stop."
+VERSION_MAJOR := $(shell echo 2 )
+VERSION_MINOR := $(shell echo 12 )
 
 FIRMWARE_VERSION := $(VERSION_MAJOR).$(VERSION_MINOR)
 
@@ -60,14 +65,12 @@ BIN_DIR := $(ROOT)/obj
 TOOLS_DIR ?= $(ROOT)/tools
 DL_DIR := $(ROOT)/downloads
 
-.PHONY : clean all binary f051 g071 f031 e230 f421 f415
-all : $(TARGETS_F051) $(TARGETS_G071) $(TARGETS_F031) $(TARGETS_E230) $(TARGETS_F421) $(TARGETS_F415)
+.PHONY : clean all binary f051 g071 f031 l431
+all : $(TARGETS_F051) $(TARGETS_G071) $(TARGETS_F031) $(TARGETS_L431)
 f051 : $(TARGETS_F051)
 g071 : $(TARGETS_G071)
 f031 : $(TARGETS_F031)
-e230 : $(TARGETS_E230)
-f421 : $(TARGETS_F421)
-f415 : $(TARGETS_F415)
+l431 : $(TARGETS_L431)
 
 clean :
 	rm -rf $(BIN_DIR)/*
@@ -88,10 +91,13 @@ $(TARGETS_E230) :
 	@$(MAKE) -s MCU_TYPE=E230 TARGET=$@ binary
 
 $(TARGETS_F421) :
-	@$(MAKE) -s MCU_TYPE=F421 TARGET=$@ binary	
+	@$(MAKE) -s MCU_TYPE=F421 TARGET=$@ binary      
 
 $(TARGETS_F415) :
-	@$(MAKE) -s MCU_TYPE=F415 TARGET=$@ binary		
+	@$(MAKE) -s MCU_TYPE=F415 TARGET=$@ binary 
+
+$(TARGETS_L431) :
+	@$(MAKE) -s MCU_TYPE=L431 TARGET=$@ binary
 
 # Compile target
 $(TARGET_BASENAME).elf: SRC := $(SRC_COMMON) $(SRC_$(MCU_TYPE))
