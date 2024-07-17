@@ -223,6 +223,10 @@ an settings option)
 #include "WS2812.h"
 #endif
 
+#if DRONECAN_SUPPORT
+#include "DroneCAN/DroneCAN.h"
+#endif
+
 #ifdef USE_CRSF_INPUT
 #include "crsf.h"
 #endif
@@ -2242,6 +2246,9 @@ int main(void)
 
 #ifdef BRUSHED_MODE
         runBrushedLoop();
+#endif
+#if DRONECAN_SUPPORT
+	DroneCAN_update();
 #endif
     }
 }

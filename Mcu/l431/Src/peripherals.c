@@ -16,7 +16,7 @@
 #include "WS2812.h"
 #endif
 #if DRONECAN_SUPPORT
-#include "DroneCAN.h"
+#include <DroneCAN.h>
 #endif
 
 //extern uint16_t DEAD_TIME;
@@ -42,7 +42,7 @@ void initCorePeripherals(void)
 	WS2812_Init();
 	#endif
 	#ifdef DRONECAN_SUPPORT
-	MX_CAN_Init();
+	DroneCAN_Init();
 	#endif
 }
 
