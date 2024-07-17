@@ -41,7 +41,7 @@
 // #define USE_ALKAS_DEBUG_LED
 
 #ifdef VIMDRONES_L431
-#define FIRMWARE_NAME "Vimdrones L431"
+#define FIRMWARE_NAME "VimdroneL431"
 #define FILE_NAME "VIMDRONES_L431"
 #define DEAD_TIME 45
 #define HARDWARE_GROUP_L4_A
