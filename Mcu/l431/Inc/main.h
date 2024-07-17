@@ -42,6 +42,7 @@ extern "C" {
 #include "stm32l4xx_ll_tim.h"
 #include "stm32l4xx_ll_gpio.h"
 #include "stm32l4xx_ll_usart.h"
+#include "stm32l4xx_hal_can.h"
 
 #if defined(USE_FULL_ASSERT)
 #include "stm32_assert.h"

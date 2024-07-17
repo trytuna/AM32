@@ -15,9 +15,11 @@
 #ifdef USE_LED_STRIP
 #include "WS2812.h"
 #endif
+#if DRONECAN_SUPPORT
+#include "DroneCAN.h"
+#endif
 
 //extern uint16_t DEAD_TIME;
-
 
 void initCorePeripherals(void)
 {
@@ -39,7 +41,9 @@ void initCorePeripherals(void)
 	#ifdef USE_LED_STRIP
 	WS2812_Init();
 	#endif
-
+	#ifdef DRONECAN_SUPPORT
+	MX_CAN_Init();
+	#endif
 }
 
 void initAfterJump()
