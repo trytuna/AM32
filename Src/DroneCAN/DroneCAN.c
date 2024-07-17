@@ -9,6 +9,7 @@
 #include "serial_telemetry.h"
 #include <canard_stm32.h>
 #include <stm32l4xx_hal.h>
+#include <common.h>
 
 // include the headers for the generated DroneCAN messages from the
 // dronecan_dsdlc compiler
@@ -26,14 +27,6 @@ static CAN_HandleTypeDef hcan;
 
 static CanardInstance canard;
 static uint8_t canard_memory_pool[CANARD_POOL_SIZE];
-
-/*
-  keep the state of the ESC
- */
-static struct esc_state {
-    float throttle;
-    uint64_t last_update_us;
-} esc;
 
 /*
   keep the state for firmware update
@@ -331,9 +324,28 @@ static void handle_RawCommand(CanardInstance *ins, CanardRxTransfer *transfer)
     if (cmd.cmd.len <= settings.esc_index) {
         return;
     }
-    // convert throttle to -1.0 to 1.0 range
-    esc.throttle = cmd.cmd.data[(unsigned)settings.esc_index]/8192.0;
-    esc.last_update_us = micros64();
+
+    // tell main loop we have had signal so we don't reset
+    signaltimeout = 0;
+    
+    // throttle demand is a value from -8191 to 8191. Negative values
+    // are for reverse throttle
+    const int16_t input_can = cmd.cmd.data[(unsigned)settings.esc_index];
+
+    /*
+      we need to map onto the AM32 expected range, which is a 11 bit number, where:
+	0: off
+	1-46: special codes
+	47-2047: throttle
+
+      we will ignore reverse throttle for now. The main code expects
+      throttle demands in newinput global
+    */
+    if (input_can <= 0) {
+	newinput = 0;
+    } else {
+	newinput = (uint16_t)(47 + input_can * (2000.0 / 8192));
+    }
 }
 
 /*
@@ -613,11 +625,11 @@ static void send_ESCStatus(void)
 
     // make up some synthetic status data
     pkt.error_count = 0;
-    pkt.voltage = 16.8 - 2.0 * esc.throttle;
-    pkt.current = 20 * esc.throttle;
-    pkt.temperature = C_TO_KELVIN(25.0);
-    pkt.rpm = 10000 * esc.throttle;
-    pkt.power_rating_pct = 100.0 * esc.throttle;
+    pkt.voltage = battery_voltage * 0.01;
+    pkt.current = actual_current * 0.02;
+    pkt.temperature = C_TO_KELVIN(degrees_celsius);
+    pkt.rpm = e_rpm * 100;
+    pkt.power_rating_pct = 0; // how do we get this?
 
     uint32_t len = uavcan_equipment_esc_Status_encode(&pkt, buffer);
 
