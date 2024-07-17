@@ -78,6 +78,11 @@ clean :
 binary : $(TARGET_BASENAME).bin
 	@$(ECHO) done $(TARGET)
 
+# include the DroneCAN makefile
+ifeq ($(MCU_TYPE),L431)
+include $(ROOT)/make/DroneCAN.mk
+endif
+
 $(TARGETS_F051) :
 	@$(MAKE) -s MCU_TYPE=F051 TARGET=$@ binary
 
@@ -100,8 +105,8 @@ $(TARGETS_L431) :
 	@$(MAKE) -s MCU_TYPE=L431 TARGET=$@ binary
 
 # Compile target
-$(TARGET_BASENAME).elf: SRC := $(SRC_COMMON) $(SRC_$(MCU_TYPE))
-$(TARGET_BASENAME).elf: CFLAGS := $(MCU_$(MCU_TYPE)) $(CFLAGS_$(MCU_TYPE)) $(CFLAGS_COMMON)
+$(TARGET_BASENAME).elf: SRC := $(SRC_COMMON) $(SRC_DRONECAN) $(SRC_$(MCU_TYPE))
+$(TARGET_BASENAME).elf: CFLAGS := $(MCU_$(MCU_TYPE)) $(CFLAGS_$(MCU_TYPE)) $(CFLAGS_COMMON) $(CFLAGS_DRONECAN)
 $(TARGET_BASENAME).elf: LDFLAGS := $(LDFLAGS_COMMON) $(LDFLAGS_$(MCU_TYPE)) -T$(LDSCRIPT_$(MCU_TYPE))
 $(TARGET_BASENAME).elf: $(SRC)
 	@$(ECHO) Compiling $(notdir $@)
@@ -132,3 +137,4 @@ targets:
 	$(QUIET)echo "E230 Targets: " $(TARGETS_E230)
 	$(QUIET)echo "F421 Targets: " $(TARGETS_F421)
 	$(QUIET)echo "F415 Targets: " $(TARGETS_F415)
+	$(QUIET)echo "L431 Targets: " $(TARGETS_L431)
