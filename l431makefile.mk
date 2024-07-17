@@ -11,13 +11,16 @@ LDSCRIPT_L431 := $(HAL_FOLDER_L431)/STM32L431KCUX_FLASH.ld
 SRC_DIR_L431 := \
 	$(HAL_FOLDER_L431)/Startup \
 	$(HAL_FOLDER_L431)/Src \
-	$(HAL_FOLDER_L431)/Drivers/STM32L4xx_HAL_Driver/Src
+	$(HAL_FOLDER_L431)/Drivers/STM32L4xx_HAL_Driver/Src \
+	modules/DroneCAN/libcanard \
+	modules/DroneCAN/libcanard/drivers/stm32
 
 CFLAGS_L431 := \
 	-I$(HAL_FOLDER_L431)/Inc \
 	-I$(HAL_FOLDER_L431)/Drivers/STM32L4xx_HAL_Driver/Inc \
 	-I$(HAL_FOLDER_L431)/Drivers/CMSIS/Include \
-	-I$(HAL_FOLDER_L431)/Drivers/CMSIS/Device/ST/STM32L4xx/Include
+	-I$(HAL_FOLDER_L431)/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
+	-Imodules/DroneCAN/libcanard
 
 CFLAGS_L431 += \
 	-DHSE_VALUE=8000000 \
@@ -31,6 +34,7 @@ CFLAGS_L431 += \
 	-DLSI_VALUE=32000 \
 	-DHSI_VALUE=16000000 \
 	-DUSE_FULL_LL_DRIVER \
-	-DPREFETCH_ENABLE=1
+	-DPREFETCH_ENABLE=1 \
+	-DDRONECAN_SUPPORT=1
 
 SRC_L431 := $(foreach dir,$(SRC_DIR_L431),$(wildcard $(dir)/*.[cs]))
