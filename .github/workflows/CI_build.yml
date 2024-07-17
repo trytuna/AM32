@@ -13,7 +13,9 @@ jobs:
 
       - name: Build CI
         run: |
+          python3 -m pip install empy==3.3.4 pyserial future dronecan
           make arm_sdk_install
+          make dsdl_generate
           make -j8
 
       - name: Archive build
