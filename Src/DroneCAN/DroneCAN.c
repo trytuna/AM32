@@ -99,27 +99,30 @@ static uint16_t get_random16(void)
     return ((m_z << 16) + m_w) & 0xFFFF;
 }
 
-void usleep(uint32_t usec)
-{
-	const volatile TIM_TypeDef *timer = UTILITY_TIMER;
-	const uint32_t start_tick = timer->CNT;
-	while (1) {
-		uint32_t dt = timer->CNT - start_tick;
-		if (dt >= usec) {
-			break;
-		}
-	}
-}
-
 /*
   get a 64 bit monotonic timestamp in microseconds since start. This
   is platform specific
+
+  NOTE: this should be in functions.c
  */
 static uint64_t micros64(void)
 {
-    // just use UTILITY_TIMER for now, this will fail on wrap
-    return UTILITY_TIMER->CNT;
+	static uint64_t base_us;
+	static uint16_t last_cnt;
+	uint16_t cnt = UTILITY_TIMER->CNT;
+	if (cnt < last_cnt) {
+		base_us += 0x10000;
+	}
+	last_cnt = cnt;
+	return base_us + cnt;
 }
+
+void usleep(uint32_t usec)
+{
+	const uint64_t t0 = micros64();
+	while (micros64() - t0 < usec) ;
+}
+
 
 /*
   get monotonic time in milliseconds since startup
@@ -641,14 +644,8 @@ static void processTxRxOnce(void)
 	// Transmitting
 	for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
 		const int16_t tx_res = canardSTM32Transmit(txf);
-		if (tx_res < 0) {         // Failure - drop the frame
+		if (tx_res != 0) {  // no timeout,  drop the frame
 			canardPopTxQueue(&canard);
-		}
-		else if (tx_res > 0) {
-			// Success - just drop the frame from the queue
-			canardPopTxQueue(&canard);
-		} else {
-			break;
 		}
 	}
 
@@ -656,7 +653,7 @@ static void processTxRxOnce(void)
 	CanardCANFrame rx_frame;
 	int res = canardSTM32Receive(&rx_frame);
 	if (res > 0) {
-		canardHandleRxFrame(&canard, &rx_frame, HAL_GetTick() * 1000ULL);
+		canardHandleRxFrame(&canard, &rx_frame, micros64());
 	}
 }
 
