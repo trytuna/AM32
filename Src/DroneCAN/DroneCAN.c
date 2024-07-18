@@ -134,10 +134,12 @@ static uint32_t millis32(void)
  */
 static void getUniqueID(uint8_t id[16])
 {
-    // hack for fixed ID
-    for (uint8_t i=0; i<16; i++) {
-	id[i] = i;
-    }
+    const uint8_t *uidbase = (const uint8_t *)UID_BASE;
+    memcpy(id, uidbase, 12);
+
+    // put CPU ID in last 4 bytes, handy for knowing the exact MCU we are on
+    const uint32_t cpuid = SCB->CPUID;
+    memcpy(&id[12], &cpuid, 4);
 }
 
 /*
@@ -288,8 +290,8 @@ static void handle_GetNodeInfo(CanardInstance *ins, CanardRxTransfer *transfer)
     pkt.status = node_status;
 
     // fill in your major and minor firmware version
-    pkt.software_version.major = 1;
-    pkt.software_version.minor = 2;
+    pkt.software_version.major = VERSION_MAJOR;
+    pkt.software_version.minor = VERSION_MINOR;
     pkt.software_version.optional_field_flags = 0;
     pkt.software_version.vcs_commit = 0; // should put git hash in here
 
