@@ -44,12 +44,9 @@ ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 # Search source files
 SRC_COMMON := $(foreach dir,$(SRC_DIRS_COMMON),$(wildcard $(dir)/*.[cs]))
 
-# VERSION_MAJOR := $(shell grep "#define VERSION_MAJOR" $(MAIN_SRC_DIR)/main.c | awk '{print $$3}' )
-# VERSION_MINOR := $(shell grep "#define VERSION_MINOR" $(MAIN_SRC_DIR)/main.c | awk '{print $$3}' )
-
-#temporary fix to avoid build error "unterminated call to function `shell': missing `)'.  Stop."
-VERSION_MAJOR := $(shell echo 2 )
-VERSION_MINOR := $(shell echo 12 )
+VERSION_MAJOR := $(shell grep "#define VERSION_MAJOR" $(MAIN_SRC_DIR)/main.c | cut -d' ' -f3 )
+VERSION_MINOR := $(shell grep "#define VERSION_MINOR" $(MAIN_SRC_DIR)/main.c | cut -d' ' -f3 )
+CFLAGS_COMMON += -DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR)
 
 FIRMWARE_VERSION := $(VERSION_MAJOR).$(VERSION_MINOR)
 
