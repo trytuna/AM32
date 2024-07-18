@@ -28,6 +28,10 @@ static CAN_HandleTypeDef hcan;
 static CanardInstance canard;
 static uint8_t canard_memory_pool[CANARD_POOL_SIZE];
 
+static struct {
+    uint32_t num_commands;
+} stats;
+
 /*
   keep the state for firmware update
  */
@@ -346,6 +350,8 @@ static void handle_RawCommand(CanardInstance *ins, CanardRxTransfer *transfer)
     } else {
 	newinput = (uint16_t)(47 + input_can * (2000.0 / 8192));
     }
+
+    stats.num_commands++;
 }
 
 /*
@@ -570,8 +576,10 @@ static void send_NodeStatus(void)
     node_status.mode = UAVCAN_PROTOCOL_NODESTATUS_MODE_OPERATIONAL;
     node_status.sub_mode = 0;
 
-    // put whatever you like in here for display in GUI
-    node_status.vendor_specific_status_code = 1234;
+    // put number of commands we have received in vendor status since the last NodeStatus
+    // this means vendor status gives us approximate command rate in commands/second
+    node_status.vendor_specific_status_code = stats.num_commands;
+    stats.num_commands = 0;
 
     /*
       when doing a firmware update put the size in kbytes in VSSC so
@@ -649,11 +657,24 @@ static void send_ESCStatus(void)
 
 
 /*
-  Transmits all frames from the TX queue, receives up to one frame.
+  receive one frame, only called from interrupt context
 */
-static void processTxRxOnce(void)
+static void receiveFrame(void)
 {
-	// Transmitting
+	CanardCANFrame rx_frame;
+	while (canardSTM32Receive(&rx_frame) > 0) {
+		canardHandleRxFrame(&canard, &rx_frame, micros64());
+	}
+}
+
+/*
+  Transmits all frames from the TX queue
+*/
+static void processTxQueue(void)
+{
+	// Transmitting, disable interrupts to prevent being called from IRQ and main
+	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
+
 	for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
 		const int16_t tx_res = canardSTM32Transmit(txf);
 		if (tx_res != 0) {  // no timeout,  drop the frame
@@ -661,12 +682,8 @@ static void processTxRxOnce(void)
 		}
 	}
 
-	// Receiving
-	CanardCANFrame rx_frame;
-	int res = canardSTM32Receive(&rx_frame);
-	if (res > 0) {
-		canardHandleRxFrame(&canard, &rx_frame, micros64());
-	}
+	// re-enable interrupts
+	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
 }
 
 void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
@@ -725,6 +742,13 @@ static void DroneCAN_Startup(void)
 		   NULL);
 
 	canardSetLocalNodeID(&canard, PREFERRED_NODE_ID);
+
+	/*
+	  enable interrupt for CAN receive
+	 */
+        HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_TX_MAILBOX_EMPTY);
 }
 
 void DroneCAN_update()
@@ -737,7 +761,7 @@ void DroneCAN_update()
 		DroneCAN_Startup();
 	}
 
-	processTxRxOnce();
+	processTxQueue();
 
 	// see if we are still doing DNA
 	if (canardGetLocalNodeID(&canard) == CANARD_BROADCAST_NODE_ID) {
@@ -758,6 +782,39 @@ void DroneCAN_update()
             next_50hz_service_at += 1000000ULL/50U;
             send_ESCStatus();
 	}
+}
+
+/*
+  handler for message pending
+ */
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcanptr)
+{
+    receiveFrame();
+}
+
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+    processTxQueue();
+}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+    processTxQueue();
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+    processTxQueue();
+}
+
+/*
+  interrupt handler for CAN1
+ */
+void CAN1_RX0_IRQHandler(void)
+{
+    // call the HAL CAN IRQ handler, which will dispatch to the right
+    // function
+    HAL_CAN_IRQHandler(&hcan);
 }
 
 #endif // DRONECAN_SUPPORT
