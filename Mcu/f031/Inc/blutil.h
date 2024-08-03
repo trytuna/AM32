@@ -21,8 +21,8 @@
 #define GPIO_PIN(n) (1U<<(n))
 
 #define GPIO_PULL_NONE LL_GPIO_PULL_NO
-#define GPIO_PULL_UP   GPIO_PUPDR_PUPDR0_0 /*!< Select I/O pull up */
-#define GPIO_PULL_DOWN GPIO_PUPDR_PUPDR0_1 /*!< Select I/O pull down */
+#define GPIO_PULL_UP   LL_GPIO_PULL_UP
+#define GPIO_PULL_DOWN LL_GPIO_PULL_DOWN
 
 #define GPIO_OUTPUT_PUSH_PULL LL_GPIO_OUTPUT_PUSHPULL
 
@@ -31,27 +31,29 @@ uint32_t SystemCoreClock = 8000000U;
 
 static inline void gpio_mode_set_input(uint32_t pin, uint32_t pull_up_down)
 {
+    LL_GPIO_SetPinMode(input_port, pin, LL_GPIO_MODE_INPUT);
     LL_GPIO_SetPinPull(input_port, pin, pull_up_down);
 }
 
 static inline void gpio_mode_set_output(uint32_t pin, uint32_t output_mode)
 {
     LL_GPIO_SetPinMode(input_port, pin, LL_GPIO_MODE_OUTPUT);
+    LL_GPIO_SetPinOutputType(input_port, pin, output_mode);
 }
 
 static inline void gpio_set(uint32_t pin)
 {
-    input_port->BSRR = pin;
+    LL_GPIO_SetOutputPin(input_port, pin);
 }
 
 static inline void gpio_clear(uint32_t pin)
 {
-    input_port->BRR = pin;
+    LL_GPIO_ResetOutputPin(input_port, pin);
 }
 
 static inline bool gpio_read(uint32_t pin)
 {
-    return (input_port->IDR & pin) != 0;
+    return LL_GPIO_IsInputPinSet(input_port, pin);
 }
 
 #define BL_TIMER TIM2
@@ -87,12 +89,12 @@ static inline void bl_timer_disable(void)
 
 static inline uint32_t bl_timer_us(void)
 {
-    return BL_TIMER->CNT;
+    return LL_TIM_GetCounter(BL_TIMER);
 }
 
 static inline void bl_timer_reset(void)
 {
-    BL_TIMER->CNT = 0;
+    LL_TIM_SetCounter(BL_TIMER, 0);
 }
 
 /*
@@ -100,30 +102,26 @@ static inline void bl_timer_reset(void)
  */
 static inline void bl_clock_config(void)
 {
+    FLASH->ACR |= FLASH_ACR_PRFTBE;   // prefetch buffer enable
+
     LL_FLASH_SetLatency(LL_FLASH_LATENCY_1);
 
     LL_RCC_HSI_Enable();
 
     /* Wait till HSI is ready */
-    while(LL_RCC_HSI_IsReady() != 1)
-    {
-    }
+    while(LL_RCC_HSI_IsReady() != 1) ;
     LL_RCC_HSI_SetCalibTrimming(16);
     LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI_DIV_2, LL_RCC_PLL_MUL_12);
     LL_RCC_PLL_Enable();
 
     /* Wait till PLL is ready */
-    while(LL_RCC_PLL_IsReady() != 1)
-    {
-    }
+    while(LL_RCC_PLL_IsReady() != 1) ;
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
     LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
 
     /* Wait till System clock is ready */
-    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
-    {
-    }
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL) ;
     LL_Init1msTick(48000000);
     LL_SetSystemCoreClock(48000000);
 }
