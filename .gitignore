@@ -14,3 +14,6 @@ Keil_Projects/Listings
 *.log
 *~
 xpack-arm-none-eabi-gcc-*
+windows-tools.zip
+macos-tools.tar.gz
+linux-tools.tar.gz

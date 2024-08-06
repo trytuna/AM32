@@ -13,7 +13,7 @@ arm_sdk_install:
 	@echo downloading windows-tools.zip
 	@powershell -Command "& { (New-Object System.Net.WebClient).DownloadFile('$(WINDOWS_TOOLS)', 'windows-tools.zip') }"
 	@echo unpacking windows-tools.zip
-	@powershell -Command "Expand-Archive -Path windows-tools.zip -Force -DestinationPath ."
+	@powershell -Command "Expand-Archive -Path windows-tools.zip -Force -DestinationPath tools"
 	@echo windows tools install done
 
 else
@@ -27,19 +27,19 @@ arm_sdk_install:
 	@which wget || (echo "No wget installed. Consider doing brew install wget"; exit 1)
 	@echo Installing macos tools
 ifeq ($(UNAME_M),arm64)
-	@wget $(MACOS_ARM64_TOOLS)
+	@wget -O macos-tools.tar.gz $(MACOS_ARM64_TOOLS)
 else
 	@wget $(MACOS_X64_TOOLS)
 endif
-	@tar xzf macos-tools.tar.gz
+	@tar xzf macos-tools.tar.gz -C tools --strip-components=1
 	@echo macos tools install done
 
 else
 
 arm_sdk_install:
 	@echo Installing linux tools
-	@wget $(LINUX_TOOLS)
-	@tar xzf linux-tools.tar.gz
+	@wget -O linux-tools $(LINUX_TOOLS)
+	@tar xzf linux-tools.tar.gz -C tools --strip-components=1
 	@echo linux tools install done
 
 endif
