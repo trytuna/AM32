@@ -22,6 +22,7 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 
 arm_sdk_install:
+	@which wget || (echo "No wget installed. Consider doing brew install wget"; exit 1)
 	@echo Installing macos tools
 	@wget $(MACOS_TOOLS)
 	@tar xzf macos-tools.tar.gz
