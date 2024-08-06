@@ -6,7 +6,7 @@
 
 
 ifeq ($(OS),Windows_NT)
-ARM_SDK_PREFIX:=tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/bin/arm-none-eabi-
+ARM_SDK_PREFIX:=tools/xpack/xpack-arm-none-eabi-gcc-13.2.1-1.1/bin/arm-none-eabi-
 SHELL:=cmd.exe
 CP:=tools\\make\\bin\\cp
 DSEP:=\\

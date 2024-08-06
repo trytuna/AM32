@@ -14,7 +14,7 @@ arm_sdk_install:
 	@echo downloading windows-tools.zip
 	@powershell -Command "& { (New-Object System.Net.WebClient).DownloadFile('$(WINDOWS_TOOLS)', 'windows-tools.zip') }"
 	@echo unpacking windows-tools.zip
-	@powershell -Command "Expand-Archive -Path windows-tools.zip -Force -DestinationPath tools"
+	@powershell -Command "Expand-Archive -Path windows-tools.zip -Force -DestinationPath tools/xpack"
 	@echo windows tools install done
 
 	@echo Installing make
