@@ -58,7 +58,7 @@ static inline void bl_timer_init(void)
 {
     rcu_periph_clock_enable(RCU_TIMER16);
     TIMER_CAR(BL_TIMER) = 0xFFFF;
-    TIMER_PSC(BL_TIMER) = 35;
+    TIMER_PSC(BL_TIMER) = 71;
     timer_auto_reload_shadow_enable(BL_TIMER);
     timer_enable(BL_TIMER);
 }
@@ -123,4 +123,8 @@ static inline void jump_to_application(void)
         "msr msp, %0	\n"
         "bx	%1	\n"
 	: : "r"(stack_top), "r"(JumpAddress) :);
+}
+
+void SysTick_Handler(void)
+{
 }
