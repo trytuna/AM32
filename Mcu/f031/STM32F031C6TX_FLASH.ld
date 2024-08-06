@@ -68,7 +68,7 @@ SECTIONS
   
 
   /* The program code and other data into "FLASH" Rom type memory */
-  .text :
+  .text (READONLY) :
   {
     . = ALIGN(4);
     *(.text)           /* .text sections (code) */
@@ -85,7 +85,7 @@ SECTIONS
   } >FLASH
 
   /* Constant data into "FLASH" Rom type memory */
-  .rodata :
+  .rodata (READONLY) :
   {
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
@@ -93,13 +93,13 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .ARM.extab   : { 
+  .ARM.extab (READONLY) : { 
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(4);
   } >FLASH
   
-  .ARM : {
+  .ARM (READONLY) : {
     . = ALIGN(4);
     __exidx_start = .;
     *(.ARM.exidx*)
@@ -107,7 +107,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .preinit_array     :
+  .preinit_array (READONLY) :
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -116,7 +116,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
   
-  .init_array :
+  .init_array (READONLY) :
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__init_array_start = .);
@@ -126,7 +126,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
   
-  .fini_array :
+  .fini_array (READONLY) :
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__fini_array_start = .);
