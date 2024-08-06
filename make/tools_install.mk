@@ -38,7 +38,7 @@ else
 
 arm_sdk_install:
 	@echo Installing linux tools
-	@wget -O linux-tools $(LINUX_TOOLS)
+	@wget -O linux-tools.tar.gz $(LINUX_TOOLS)
 	@tar xzf linux-tools.tar.gz -C tools --strip-components=1
 	@echo linux tools install done
 
