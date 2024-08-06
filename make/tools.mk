@@ -8,13 +8,13 @@
 ifeq ($(OS),Windows_NT)
 ARM_SDK_PREFIX:=tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/bin/arm-none-eabi-
 SHELL:=cmd.exe
-CP:=tools\\windows\\make\\bin\\cp
+CP:=tools\\make\\bin\\cp
 DSEP:=\\
 NUL:=NUL
-MKDIR:=tools\\windows\\make\\bin\\mkdir
-RM:=tools\\windows\\make\\bin\\rm
-CUT:=tools\\windows\\make\\bin\\cut
-FGREP:=tools\\windows\\make\\bin\\fgrep
+MKDIR:=tools\\make\\bin\\mkdir
+RM:=tools\\make\\bin\\rm
+CUT:=tools\\make\\bin\\cut
+FGREP:=tools\\make\\bin\\fgrep
 
 else
 # MacOS and Linux

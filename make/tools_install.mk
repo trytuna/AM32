@@ -1,6 +1,7 @@
 # rules to download and install the tools for windows and linux
 
 # download location for tools
+WINDOWS_MAKE=https://netcologne.dl.sourceforge.net/project/gnuwin32/make/3.81/make-3.81-bin.zip
 WINDOWS_TOOLS=https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-win32-x64.zip
 LINUX_TOOLS=https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-linux-x64.tar.gz
 MACOS_ARM64_TOOLS=https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-darwin-arm64.tar.gz
@@ -15,6 +16,13 @@ arm_sdk_install:
 	@echo unpacking windows-tools.zip
 	@powershell -Command "Expand-Archive -Path windows-tools.zip -Force -DestinationPath tools"
 	@echo windows tools install done
+
+	@echo Installing make
+	@echo downloading make.zip
+	@powershell -Command "& { (New-Object System.Net.WebClient).DownloadFile('$(WINDOWS_MAKE)', 'make.zip') }"
+	@echo unpacking make.zip
+	@powershell -Command "Expand-Archive -Path make.zip -Force -DestinationPath tools/make"
+	@echo make install done
 
 else
 # macOS or Linux
