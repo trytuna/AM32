@@ -1,9 +1,10 @@
 # rules to download and install the tools for windows and linux
 
 # download location for tools
-WINDOWS_TOOLS=https://firmware.ardupilot.org/Tools/AM32-tools/windows-tools.zip
-LINUX_TOOLS=https://firmware.ardupilot.org/Tools/AM32-tools/linux-tools.tar.gz
-MACOS_TOOLS=https://firmware.ardupilot.org/Tools/AM32-tools/macos-tools.tar.gz
+WINDOWS_TOOLS=https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-win32-x64.zip
+LINUX_TOOLS=https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-linux-x64.tar.gz
+MACOS_ARM64_TOOLS=https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-darwin-arm64.tar.gz
+MACOS_X64_TOOLS=https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-darwin-x64.tar.gz
 
 ifeq ($(OS),Windows_NT)
 
@@ -16,15 +17,20 @@ arm_sdk_install:
 	@echo windows tools install done
 
 else
-# MacOS and Linux
+# macOS or Linux
 UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
 
 ifeq ($(UNAME_S),Darwin)
 
 arm_sdk_install:
 	@which wget || (echo "No wget installed. Consider doing brew install wget"; exit 1)
 	@echo Installing macos tools
-	@wget $(MACOS_TOOLS)
+ifeq ($(UNAME_M),arm64)
+	@wget $(MACOS_ARM64_TOOLS)
+else
+	@wget $(MACOS_X64_TOOLS)
+endif
 	@tar xzf macos-tools.tar.gz
 	@echo macos tools install done
 

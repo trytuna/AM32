@@ -13,6 +13,4 @@ Keil_Projects/Listings
 *.hex
 *.log
 *~
-macos-tools.tar.gz
-linux-tools.tar.gz
-windows-tools.zip
+xpack-arm-none-eabi-gcc-*
